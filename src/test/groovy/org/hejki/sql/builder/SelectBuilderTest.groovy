@@ -25,16 +25,18 @@ class SelectBuilderTest extends Specification {
         when:
         def result = SQL.<Filter>select("*")
                 .from("table")
-                .where(eqParam("col1", "str"))
-                .and(neParam("col2", "number"))
-                .and(gtParam("none", "none"))
+                .where(eqProperty("col1", "str"))
+                .and(neProperty("col2", "number"))
+                .and(gtProperty("none", "none"))
                 .or(lt("col3", 4))
                 .or(ge("none", null))
+                .setParameterConverter("col1", { String o -> o + "2"})
+                .setParameterPlaceholder("col1", "?::text")
                 .toSql(filter)
 
         then:
-        "SELECT * FROM table WHERE col1 = ? AND col2 != ? OR col3 < ?" == result.sql
-        ["a", 1, 4] == result.parameters
+        "SELECT * FROM table WHERE col1 = ?::text AND col2 != ? OR col3 < ?" == result.sql
+        ["a2", 1, 4] == result.parameters
     }
 
     def "paging"() {

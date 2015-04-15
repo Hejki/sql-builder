@@ -1,6 +1,7 @@
 package org.hejki.sql.builder;
 
-import java.lang.reflect.Field;
+import org.hejki.sql.builder.util.PropertyUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,29 +43,22 @@ public class WhereBuilderBase<T extends SQLBuilder> extends SQLBuilder<T> {
                 continue;
             }
 
-            if (condition instanceof Condition.ParamCondition) {
-                String propertyName = condition.getParamName();
-                try {
-                    Field field = parametersObject.getClass().getDeclaredField(propertyName);
-                    field.setAccessible(true);
-                    Object value = field.get(parametersObject);
+            if (condition instanceof Condition.PropertyCondition) {
+                final Condition finalOperator = operator;
+                PropertyUtils.property(condition.getPropertyName(), parametersObject, value -> {
                     if (value != null) {
-                        appendCondition(sql, operator, condition);
-                        parameters.add(value);
+                        appendCondition(sql, finalOperator, condition);
+                        parameters.add(convertParameterValue(condition.getColumnName(), value));
                     }
-                } catch (IllegalAccessException e) {
-                    throw new IllegalArgumentException("Cannot get value from property " + propertyName + " on object " + parametersObject, e);
-                } catch (NoSuchFieldException e) {
-                    // it's ok (maybe)
-                }
+                });
                 continue;
             }
 
             if (condition instanceof Condition.ValueCondition) {
-                Object value = condition.getParamValue();
+                Object value = condition.getParameterValue();
                 if (value != null) {
                     appendCondition(sql, operator, condition);
-                    parameters.add(value);
+                    parameters.add(convertParameterValue(condition.getColumnName(), value));
                 }
                 continue;
             }
@@ -82,6 +76,6 @@ public class WhereBuilderBase<T extends SQLBuilder> extends SQLBuilder<T> {
         if (null != operator) {
             sql.append(operator);
         }
-        sql.append(condition);
+        sql.append(condition.createExpression(this));
     }
 }

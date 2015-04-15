@@ -15,8 +15,8 @@ public class SQL {
         return new SelectBuilder().select(columns);
     }
 
-    public static UpdateBuilder update() {
-        return new UpdateBuilder();
+    public static UpdateBuilder update(String table) {
+        return new UpdateBuilder(table);
     }
 
     public static InsertBuilder insertInto(String table) {

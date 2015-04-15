@@ -1,131 +1,142 @@
 package org.hejki.sql.builder;
 
+import java.text.MessageFormat;
+
 /**
  * TODO Document me.
  *
  * @author Petr Hejkal
  */
 public class Condition {
-    private static final String P = "?";
     static Condition AND = new OpCondition(" AND ");
     static Condition OR = new OpCondition(" OR ");
 
-    private String value;
-    private String paramName;
-    private Object paramValue;
+    private String column;
+    private String expression;
+    private String propertyName;
+    private Object parameterValue;
 
-    private Condition(String paramName, Object paramValue, String value) {
-        this.value = value;
-        this.paramName = paramName;
-        this.paramValue = paramValue;
+    private Condition(String column, String propertyName, Object parameterValue, String expression) {
+        this.column = column;
+        this.expression = expression;
+        this.propertyName = propertyName;
+        this.parameterValue = parameterValue;
     }
 
-    String getParamName() {
-        return paramName;
+    String getColumnName() {
+        return column;
     }
 
-    Object getParamValue() {
-        return paramValue;
+    String getPropertyName() {
+        return propertyName;
+    }
+
+    Object getParameterValue() {
+        return parameterValue;
+    }
+
+    public String createExpression(SQLBuilder builder) {
+        return MessageFormat.format(expression, column, builder.getPlaceholder(column));
     }
 
     @Override
     public String toString() {
-        return value;
+        return MessageFormat.format(expression, column, "?");
     }
 
     public static Condition eq(String column, Object value) {
-        return new ValueCondition(value, column, "=", P);
+        return new ValueCondition(value, column, "{0} = {1}");
     }
 
     public static Condition ne(String column, Object value) {
-        return new ValueCondition(value, column, "!=", P);
+        return new ValueCondition(value, column, "{0} != {1}");
     }
 
     public static Condition ge(String column, Object value) {
-        return new ValueCondition(value, column, ">=", P);
+        return new ValueCondition(value, column, "{0} >= {1}");
     }
 
     public static Condition gt(String column, Object value) {
-        return new ValueCondition(value, column, ">", P);
+        return new ValueCondition(value, column, "{0} > {1}");
     }
 
     public static Condition le(String column, Object value) {
-        return new ValueCondition(value, column, "<=", P);
+        return new ValueCondition(value, column, "{0} <= {1}");
     }
 
     public static Condition lt(String column, Object value) {
-        return new ValueCondition(value, column, "<", P);
+        return new ValueCondition(value, column, "{0} < {1}");
     }
 
     public static Condition ilike(String column, Object value) {
-        return new ValueCondition(value, "lower(", column, ") like lower(", P, ")");
+        return new ValueCondition(value, column, "{0} ilike {1}");
     }
 
     public static Condition like(String column, Object value) {
-        return new ValueCondition(value, column, "like", P);
+        return new ValueCondition(value, column, "{0} ilike {1}");
     }
 
-    public static Condition eqParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, "=", P);
+    public static Condition eqProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} = {1}");
     }
 
-    public static Condition neParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, "!=", P);
+    public static Condition neProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} != {1}");
     }
 
-    public static Condition geParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, ">=", P);
+    public static Condition geProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} >= {1}");
     }
 
-    public static Condition gtParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, ">", P);
+    public static Condition gtProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} > {1}");
     }
 
-    public static Condition leParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, "<=", P);
+    public static Condition leProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} <= {1}");
     }
 
-    public static Condition ltParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, "<", P);
+    public static Condition ltProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} < {1}");
     }
 
-    public static Condition ilikeParam(String column, String paramName) {
-        return new ParamCondition(paramName, "lower(", column, ") like lower(", P, ")");
+    public static Condition ilikeProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} ilike {1}");
     }
 
-    public static Condition likeParam(String column, String paramName) {
-        return new ParamCondition(paramName, column, "like", P);
+    public static Condition likeProperty(String column, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} like {1}");
     }
 
     public static Condition isNull(String column) {
-        return new SimpleCondition(column, "is null");
+        return new SimpleCondition(column, "{0} is null");
     }
 
     public static Condition isNotNull(String column) {
-        return new SimpleCondition(column, "is not null");
+        return new SimpleCondition(column, "{0} is not null");
     }
 
     static class OpCondition extends Condition {
         private OpCondition(String value) {
-            super(null, null, value);
+            super("", null, null, value);
         }
     }
 
-    static class ParamCondition extends Condition {
-        private ParamCondition(String paramName, String... value) {
-            super(paramName, null, String.join(" ", value));
+    static class PropertyCondition extends Condition {
+        private PropertyCondition(String propertyName, String column, String expression) {
+            super(column, propertyName, null, expression);
         }
     }
 
     static class ValueCondition extends Condition {
-        private ValueCondition(Object paramValue, String... value) {
-            super(null, paramValue, String.join(" ", value));
+        private ValueCondition(Object parameterValue, String column, String expression) {
+            super(column, null, parameterValue, expression);
         }
     }
 
     private static class SimpleCondition extends Condition {
-        private SimpleCondition(String... value) {
-            super(null, null, String.join(" ", value));
+        private SimpleCondition(String column, String expression) {
+            super(column, null, null, expression);
         }
     }
 }

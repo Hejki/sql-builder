@@ -24,4 +24,12 @@ public class WhereBuilder extends WhereBuilderBase<SelectBuilder> {
     public OrderByBuilder orderByMap(String property, String column) {
         return new OrderByBuilder(this).orderByMap(property, column);
     }
+
+    public WhereBuilder and(Condition condition) {
+        return (WhereBuilder) super.and(condition);
+    }
+
+    public WhereBuilder or(Condition condition) {
+        return (WhereBuilder) super.or(condition);
+    }
 }

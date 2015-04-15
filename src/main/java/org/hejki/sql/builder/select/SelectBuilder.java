@@ -52,17 +52,19 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
         sql.append(baseSql.sql());
 
         boolean firstOrder = true;
-        for (Sort.Order order : pageable.getSort()) {
-            String property = order.getProperty();
-            String column = orderByMap.getOrDefault(property, property);
+        if (null != pageable.getSort()) {
+            for (Sort.Order order : pageable.getSort()) {
+                String property = order.getProperty();
+                String column = orderByMap.getOrDefault(property, property);
 
-            if (firstOrder) {
-                firstOrder = false;
-                sql.append(" ORDER BY ");
-            } else {
-                sql.append(", ");
+                if (firstOrder) {
+                    firstOrder = false;
+                    sql.append(" ORDER BY ");
+                } else {
+                    sql.append(", ");
+                }
+                sql.append(column).append(" ").append(order.getDirection());
             }
-            sql.append(column).append(" ").append(order.getDirection());
         }
 
         sql.append(" LIMIT ? OFFSET ?");
