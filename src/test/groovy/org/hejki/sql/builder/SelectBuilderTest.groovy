@@ -61,6 +61,15 @@ class SelectBuilderTest extends Specification {
         "SELECT * FROM t" == SQL.select("*").from("t").complete().toSql(null, null).sql
     }
 
+    def "paging by limit and offset"() {
+        when:
+        def sql = SQL.select("*").from("t").complete().toSql(null, 10, 0)
+
+        then:
+        "SELECT * FROM t LIMIT ? OFFSET ?" == sql.sql
+        [10, 0] == sql.parameters
+    }
+
     def "joins"() {
         when:
         def result = SQL.select("b as b")
@@ -78,5 +87,33 @@ class SelectBuilderTest extends Specification {
                 "LEFT OUTER JOIN groups g ON g.id = c.g RIGHT OUTER JOIN groups gg ON gg.id = c.gg " +
                 "FULL OUTER JOIN fo f ON f.d = r.f CROSS JOIN tab v ON v = r" == result.sql
         [] == result.parameters
+    }
+
+    def "orderBy"() {
+        expect:
+        result == builder.toSql().sql
+
+        where:
+        result                                        | builder
+        "SELECT * FROM t ORDER BY name"               | SQL.select("*").from("t").orderBy("name")
+        "SELECT * FROM t ORDER BY name ASC"           | SQL.select("*").from("t").orderBy("name", true)
+        "SELECT * FROM t ORDER BY name DESC"          | SQL.select("*").from("t").orderBy("name", false)
+        "SELECT * FROM t ORDER BY name, surname DESC" | SQL.select("*").from("t").orderBy("name").orderBy("surname DESC")
+        "SELECT * FROM t GROUP BY g ORDER BY name"    | SQL.select("*").from("t").groupBy("g").orderBy("name")
+    }
+
+    def "orderBy and paging"() {
+        def page = new PageRequest(0, 10, new Sort(new Sort.Order(Sort.Direction.ASC, "aProp"), new Sort.Order(Sort.Direction.DESC, "bProp")))
+
+        when:
+        def sql = SQL.select("*")
+                .from("t")
+                .orderBy("name")
+                .complete()
+                .toSql(null, page)
+
+        then:
+        "SELECT * FROM t ORDER BY name LIMIT ? OFFSET ?" == sql.sql
+        [10, 0] == sql.parameterList
     }
 }

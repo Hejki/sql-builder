@@ -2,6 +2,8 @@ package org.hejki.sql.builder.select;
 
 import org.hejki.sql.builder.SQLBuilder;
 import org.hejki.sql.builder.SqlWithParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -21,6 +23,8 @@ import java.util.Map;
  * @author Petr Hejkal
  */
 public class SelectBuilder extends SQLBuilder<SelectBuilder> {
+    private static Logger log = LoggerFactory.getLogger(SelectBuilder.class);
+    private static final String LIMIT_OFFSET_SQL = " LIMIT ? OFFSET ?";
     private Map<String, String> orderByMap = new HashMap<>();
 
     public SelectBuilder() {
@@ -41,35 +45,50 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
     }
 
     public SqlWithParameters toSql(Object filter, Pageable pageable) {
-        SqlWithParameters baseSql = toSql(filter);
         if (null == pageable) {
-            return baseSql;
+            return toSql(filter);
         }
 
-        List<Object> parameters = baseSql.getParameterList();
-        StringBuilder sql = new StringBuilder(baseSql.sql().length() + 32);
+        StringBuilder orderBy = null;
+        SqlWithParameters baseSql = toSql(filter, pageable.getPageSize(), pageable.getOffset());
 
-        sql.append(baseSql.sql());
-
-        boolean firstOrder = true;
         if (null != pageable.getSort()) {
+            if (baseSql.sql().contains("ORDER BY")) {
+                log.warn("Cannot use sort from Pageable for define ORDER BY because sorting was specified by orderBy methods. " +
+                        "Use only orderBy methods or pageable sort with orderByMap methods but not both.");
+                return baseSql;
+            }
+
             for (Sort.Order order : pageable.getSort()) {
                 String property = order.getProperty();
                 String column = orderByMap.getOrDefault(property, property);
 
-                if (firstOrder) {
-                    firstOrder = false;
-                    sql.append(" ORDER BY ");
+                if (null == orderBy) {
+                    orderBy = new StringBuilder(32);
+                    orderBy.append(" ORDER BY ");
                 } else {
-                    sql.append(", ");
+                    orderBy.append(", ");
                 }
-                sql.append(column).append(" ").append(order.getDirection());
+                orderBy.append(column).append(" ").append(order.getDirection());
             }
         }
 
-        sql.append(" LIMIT ? OFFSET ?");
-        parameters.add(pageable.getPageSize());
-        parameters.add(pageable.getOffset());
+        if (null != orderBy) {
+            String sql = baseSql.sql().replace(LIMIT_OFFSET_SQL, orderBy.toString() + LIMIT_OFFSET_SQL);
+            return new SqlWithParameters(sql, baseSql.getParameterList());
+        }
+        return baseSql;
+    }
+
+    public SqlWithParameters toSql(Object filter, int limit, int offset) {
+        SqlWithParameters baseSql = toSql(filter);
+        List<Object> parameters = baseSql.getParameterList();
+        StringBuilder sql = new StringBuilder(baseSql.sql().length() + 32);
+
+        sql.append(baseSql.sql());
+        sql.append(LIMIT_OFFSET_SQL);
+        parameters.add(limit);
+        parameters.add(offset);
 
         return new SqlWithParameters(sql.toString(), parameters);
     }

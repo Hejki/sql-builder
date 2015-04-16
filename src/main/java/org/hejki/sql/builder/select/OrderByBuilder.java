@@ -16,4 +16,14 @@ public class OrderByBuilder extends SQLBuilder<SelectBuilder> {
         complete().orderByMap(property, column);
         return this;
     }
+
+    public OrderByBuilder orderBy(String column) {
+        addPart(SqlPart.ORDER_BY, column);
+        return this;
+    }
+
+    public OrderByBuilder orderBy(String column, boolean ascending) {
+        addPart(SqlPart.ORDER_BY, column + (ascending ? " ASC" : " DESC"));
+        return this;
+    }
 }

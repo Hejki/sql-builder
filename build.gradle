@@ -30,8 +30,11 @@ repositories {
 
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-jdbc")
-    compile("org.springframework.data:spring-data-commons")
+    compile(
+            "org.slf4j:slf4j-api",
+            "org.springframework.boot:spring-boot-starter-jdbc",
+            "org.springframework.data:spring-data-commons",
+    )
     testCompile (
             'org.spockframework:spock-core',
             'org.spockframework:spock-spring',

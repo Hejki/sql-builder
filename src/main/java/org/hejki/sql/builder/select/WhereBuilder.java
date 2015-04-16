@@ -21,6 +21,14 @@ public class WhereBuilder extends WhereBuilderBase<SelectBuilder> {
         return new HavingBuilder(this).having(condition);
     }
 
+    public OrderByBuilder orderBy(String column) {
+        return new OrderByBuilder(this).orderBy(column);
+    }
+
+    public OrderByBuilder orderBy(String column, boolean ascending) {
+        return new OrderByBuilder(this).orderBy(column, ascending);
+    }
+
     public OrderByBuilder orderByMap(String property, String column) {
         return new OrderByBuilder(this).orderByMap(property, column);
     }
