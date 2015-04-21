@@ -136,7 +136,8 @@ public abstract class SQLBuilder<T extends SQLBuilder> {
         String set = resolvePlaceholder(SqlPart.VALUES, filter, parameters);
         String where = resolvePlaceholder(SqlPart.WHERE, filter, parameters);
 
-        String sql = MessageFormat.format(this.sql.toString(), set, where);
+        String pattern = this.sql.toString().replace("'", "''");
+        String sql = MessageFormat.format(pattern, set, where);
         return new SqlWithParameters(sql, parameters);
     }
 

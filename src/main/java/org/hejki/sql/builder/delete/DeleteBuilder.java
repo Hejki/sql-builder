@@ -15,7 +15,7 @@ public class DeleteBuilder extends SQLBuilder<DeleteBuilder> {
         addPart(SqlPart.DELETE, table);
     }
 
-    public WhereBuilder where(Condition condition) {
-        return super.where(new WhereBuilder(this, condition));
+    public WhereBuilder where(Condition... conditions) {
+        return super.where(new WhereBuilder(this, conditions));
     }
 }

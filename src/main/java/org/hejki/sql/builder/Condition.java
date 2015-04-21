@@ -8,15 +8,17 @@ import java.text.MessageFormat;
  * @author Petr Hejkal
  */
 public class Condition {
-    static Condition AND = new OpCondition(" AND ");
-    static Condition OR = new OpCondition(" OR ");
+    public static final Condition AND = new OpCondition(" AND ");
+    public static final Condition OR = new OpCondition(" OR ");
+    public static final Condition BEGIN_GROUP = new GroupOpCondition(true);
+    public static final Condition END_GROUP = new GroupOpCondition(false);
 
     private String column;
     private String expression;
     private String propertyName;
     private Object parameterValue;
 
-    private Condition(String column, String propertyName, Object parameterValue, String expression) {
+    Condition(String column, String propertyName, Object parameterValue, String expression) {
         this.column = column;
         this.expression = expression;
         this.propertyName = propertyName;
@@ -36,12 +38,28 @@ public class Condition {
     }
 
     public String createExpression(SQLBuilder builder) {
-        return MessageFormat.format(expression, column, builder.getPlaceholder(column));
+        return format(builder.getPlaceholder(column));
     }
 
     @Override
     public String toString() {
-        return MessageFormat.format(expression, column, "?");
+        return format("?");
+    }
+
+    private String format(String placeholder) {
+        return MessageFormat.format(expression, column, placeholder);
+    }
+
+    public static Condition oneEqOne() {
+        return new ValueCondition("", "", "1 = 1");
+    }
+
+    public static Condition custom(String expression, Object value) {
+        return new ValueCondition(value, "", expression);
+    }
+
+    public static Condition custom(String column, String operator, Object value) {
+        return new ValueCondition(value, column, "{0} " + operator + " {1}");
     }
 
     public static Condition eq(String column, Object value) {
@@ -73,7 +91,15 @@ public class Condition {
     }
 
     public static Condition like(String column, Object value) {
-        return new ValueCondition(value, column, "{0} ilike {1}");
+        return new ValueCondition(value, column, "{0} like {1}");
+    }
+
+    public static Condition customProperty(String expression, String propertyName) {
+        return new PropertyCondition(propertyName, "", expression);
+    }
+
+    public static Condition customProperty(String column, String operator, String propertyName) {
+        return new PropertyCondition(propertyName, column, "{0} " + operator + " {1}");
     }
 
     public static Condition eqProperty(String column, String propertyName) {
@@ -119,6 +145,12 @@ public class Condition {
     static class OpCondition extends Condition {
         private OpCondition(String value) {
             super("", null, null, value);
+        }
+    }
+
+    static class GroupOpCondition extends Condition {
+        private GroupOpCondition(boolean open) {
+            super("", null, null, open ? "(" : ")");
         }
     }
 

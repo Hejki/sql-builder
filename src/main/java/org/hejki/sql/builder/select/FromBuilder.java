@@ -13,8 +13,8 @@ public class FromBuilder extends SQLBuilder<SelectBuilder> {
         return this;
     }
 
-    public WhereBuilder where(Condition condition) {
-        return super.where(new WhereBuilder(this, condition));
+    public WhereBuilder where(Condition... conditions) {
+        return super.where(new WhereBuilder(this, conditions));
     }
 
     public FromBuilder join(String table, String on) {

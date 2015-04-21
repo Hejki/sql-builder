@@ -9,7 +9,7 @@ import org.hejki.sql.builder.WhereBuilderBase;
  * @author Petr Hejkal
  */
 public class WhereBuilder extends WhereBuilderBase<UpdateBuilder> {
-    public WhereBuilder(UpdateBuilder parent, Condition condition) {
-        super(parent, condition);
+    public WhereBuilder(UpdateBuilder parent, Condition... conditions) {
+        super(parent, conditions);
     }
 }

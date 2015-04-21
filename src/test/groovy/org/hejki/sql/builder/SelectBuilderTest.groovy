@@ -39,6 +39,28 @@ class SelectBuilderTest extends Specification {
         ["a2", 1, 4] == result.parameters
     }
 
+    def "where condition when null"() {
+        def filter = new Filter(str: null, number: 1)
+
+        when:
+        def result = SQL.<Filter>select("encode(a, 'base64')")
+                .from("table")
+                .where(eqProperty("col1", "str"))
+                .and(neProperty("col2", "number"))
+                .and(gtProperty("none", "none"))
+                .or(lt("col3", 4))
+                .or(ge("none", null))
+                .and(custom("'y'", "~", "z"))
+                .setParameterConverter("col1", { String o -> o + "2"})
+                .setParameterPlaceholder("col1", "?::text")
+                .setParameterPlaceholder("'y'", "?->'no'")
+                .toSql(filter)
+
+        then:
+        "SELECT encode(a, 'base64') FROM table WHERE col2 != ? OR col3 < ? AND 'y' ~ ?->'no'" == result.sql
+        [1, 4, "z"] == result.parameters
+    }
+
     def "paging"() {
         def page = new PageRequest(0, 10, new Sort(new Sort.Order(Sort.Direction.ASC, "aProp"), new Sort.Order(Sort.Direction.DESC, "bProp")))
 
@@ -115,5 +137,19 @@ class SelectBuilderTest extends Specification {
         then:
         "SELECT * FROM t ORDER BY name LIMIT ? OFFSET ?" == sql.sql
         [10, 0] == sql.parameterList
+    }
+
+    def "where with groups"() {
+        expect:
+        result == builder.toSql().sql
+
+        where:
+        result                                                                           | builder
+        "SELECT * FROM t WHERE (a != ? AND 1 = 1)"                                       | SQL.select("*").from("t").where().and(ne("a", "b"), oneEqOne())
+        "SELECT * FROM t WHERE (a > ? AND c <= ?)"                                       | SQL.select("*").from("t").where(gt("a", "b"), le("c", "d"))
+        "SELECT * FROM t WHERE (a ilike ? OR b like ?) AND (c is null OR d is not null)" | SQL.select("*").from("t")
+                .where().or(ilike("a", ""), like("b", "")).and(isNull("c"), OR, isNotNull("d"))
+        "SELECT * FROM t WHERE a = ? OR b = ? AND (c = ? AND d = ?)"                     | SQL.select("*").from("t")
+                .where(eq("a", ""), OR, eq("b", ""), AND, BEGIN_GROUP, eq("c", ""), eq("d", ""))
     }
 }

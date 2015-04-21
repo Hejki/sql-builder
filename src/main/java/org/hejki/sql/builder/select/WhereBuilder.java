@@ -9,8 +9,8 @@ import org.hejki.sql.builder.WhereBuilderBase;
  * @author Petr Hejkal
  */
 public class WhereBuilder extends WhereBuilderBase<SelectBuilder> {
-    public WhereBuilder(FromBuilder parent, Condition condition) {
-        super(parent, condition);
+    public WhereBuilder(FromBuilder parent, Condition... conditions) {
+        super(parent, conditions);
     }
 
     public GroupByBuilder groupBy(String expression) {
@@ -33,8 +33,8 @@ public class WhereBuilder extends WhereBuilderBase<SelectBuilder> {
         return new OrderByBuilder(this).orderByMap(property, column);
     }
 
-    public WhereBuilder and(Condition condition) {
-        return (WhereBuilder) super.and(condition);
+    public WhereBuilder and(Condition condition, Condition... conditions) {
+        return (WhereBuilder) super.and(condition, conditions);
     }
 
     public WhereBuilder or(Condition condition) {
