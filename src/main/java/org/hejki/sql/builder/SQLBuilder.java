@@ -48,18 +48,37 @@ public abstract class SQLBuilder<T extends SQLBuilder> {
         }
     }
 
-    public T complete() {
-        if (null != parent) {
-            return parent.complete();
-        }
+    public final SQL build() {
         immutable = true;
+        if (null != parent) {
+            return parent.build();
+        }
+        return innerBuild();
+    }
+
+    protected SQL innerBuild() {
+        return new SQL(this);
+    }
+
+    protected T parent() {
+        if (null != parent) {
+            return parent.parent();
+        }
         return (T) this;
     }
 
-    protected void addPart(SqlPart part, String... strings) {
+    protected void checkImmutability() {
         if (immutable) {
-            throw new IllegalStateException("SQL builder cannot be modified after call complete() method.");
+            throw new IllegalStateException("SQL builder cannot be modified after call build() method.");
         }
+
+        if (null != parent) {
+            parent.checkImmutability();
+        }
+    }
+
+    protected void addPart(SqlPart part, String... strings) {
+        checkImmutability();
 
         if (null != parent) {
             parent.addPart(part, strings);
@@ -123,11 +142,7 @@ public abstract class SQLBuilder<T extends SQLBuilder> {
         return (T) this;
     }
 
-    public SqlWithParameters toSql() {
-        return toSql(null);
-    }
-
-    public SqlWithParameters toSql(Object filter) {
+    protected SqlWithParameters toSql(Object filter) {
         if (null != parent) {
             return parent.toSql(filter);
         }

@@ -30,6 +30,7 @@ class InsertBuilderTest extends Specification {
                         return o.name()
                     }
                 })
+                .build()
                 .toSql(obj)
 
         then:

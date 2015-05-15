@@ -13,7 +13,7 @@ public class OrderByBuilder extends SQLBuilder<SelectBuilder> {
     }
 
     public OrderByBuilder orderByMap(String property, String column) {
-        complete().orderByMap(property, column);
+        parent().orderByMap(property, column);
         return this;
     }
 

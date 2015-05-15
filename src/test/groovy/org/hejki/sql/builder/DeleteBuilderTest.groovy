@@ -12,6 +12,7 @@ class DeleteBuilderTest extends Specification {
                 .where(eq("col", "val"))
                 .setParameterConverter("col", { String o -> o + "2"})
                 .setParameterPlaceholder("col", "?::text")
+                .build()
                 .toSql(null)
 
         then:

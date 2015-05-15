@@ -32,6 +32,7 @@ class SelectBuilderTest extends Specification {
                 .or(ge("none", null))
                 .setParameterConverter("col1", { String o -> o + "2"})
                 .setParameterPlaceholder("col1", "?::text")
+                .build()
                 .toSql(filter)
 
         then:
@@ -54,6 +55,7 @@ class SelectBuilderTest extends Specification {
                 .setParameterConverter("col1", { String o -> o + "2"})
                 .setParameterPlaceholder("col1", "?::text")
                 .setParameterPlaceholder("'y'", "?->'no'")
+                .build()
                 .toSql(filter)
 
         then:
@@ -70,7 +72,7 @@ class SelectBuilderTest extends Specification {
                 .where(isNotNull("a"))
                 .orderByMap("aProp", "a")
                 .orderByMap("bProp", "b")
-                .complete()
+                .build()
                 .toSql(null, page)
 
         then:
@@ -80,12 +82,12 @@ class SelectBuilderTest extends Specification {
 
     def "paging null"() {
         expect:
-        "SELECT * FROM t" == SQL.select("*").from("t").complete().toSql(null, null).sql
+        "SELECT * FROM t" == SQL.select("*").from("t").build().toSql(null, null).sql
     }
 
     def "paging by limit and offset"() {
         when:
-        def sql = SQL.select("*").from("t").complete().toSql(null, 10, 0)
+        def sql = SQL.select("*").from("t").build().toSql(null, 10, 0)
 
         then:
         "SELECT * FROM t LIMIT ? OFFSET ?" == sql.sql
@@ -102,6 +104,7 @@ class SelectBuilderTest extends Specification {
                 .rightOuterJoin("groups gg", "gg.id = c.gg")
                 .fullOuterJoin("fo f", "f.d = r.f")
                 .crossJoin("tab v", "v = r")
+                .build()
                 .toSql(null)
 
         then:
@@ -113,7 +116,7 @@ class SelectBuilderTest extends Specification {
 
     def "orderBy"() {
         expect:
-        result == builder.toSql().sql
+        result == builder.build().toSql().sql
 
         where:
         result                                        | builder
@@ -131,7 +134,7 @@ class SelectBuilderTest extends Specification {
         def sql = SQL.select("*")
                 .from("t")
                 .orderBy("name")
-                .complete()
+                .build()
                 .toSql(null, page)
 
         then:
@@ -141,7 +144,7 @@ class SelectBuilderTest extends Specification {
 
     def "where with groups"() {
         expect:
-        result == builder.toSql().sql
+        result == builder.build().toSql().sql
 
         where:
         result                                                                           | builder

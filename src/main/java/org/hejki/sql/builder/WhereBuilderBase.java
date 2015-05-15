@@ -36,6 +36,7 @@ public class WhereBuilderBase<T extends SQLBuilder> extends SQLBuilder<T> {
     }
 
     private WhereBuilderBase<T> add(Condition operator, Condition condition, Condition... additionalConditions) {
+        checkImmutability();
         conditions.add(operator);
 
         if (additionalConditions.length > 0) {

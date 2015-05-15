@@ -1,5 +1,6 @@
 package org.hejki.sql.builder.select;
 
+import org.hejki.sql.builder.SQL;
 import org.hejki.sql.builder.SQLBuilder;
 import org.hejki.sql.builder.SqlWithParameters;
 import org.slf4j.Logger;
@@ -44,7 +45,7 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
         orderByMap.put(property, column);
     }
 
-    public SqlWithParameters toSql(Object filter, Pageable pageable) {
+    SqlWithParameters toSql(Object filter, Pageable pageable) {
         if (null == pageable) {
             return toSql(filter);
         }
@@ -80,7 +81,7 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
         return baseSql;
     }
 
-    public SqlWithParameters toSql(Object filter, int limit, int offset) {
+    SqlWithParameters toSql(Object filter, int limit, int offset) {
         SqlWithParameters baseSql = toSql(filter);
         List<Object> parameters = baseSql.getParameterList();
         StringBuilder sql = new StringBuilder(baseSql.sql().length() + 32);
@@ -91,6 +92,11 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
         parameters.add(offset);
 
         return new SqlWithParameters(sql.toString(), parameters);
+    }
+
+    @Override
+    protected SQL innerBuild() {
+        return new SelectSQL(this);
     }
 }
 

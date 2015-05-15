@@ -4,6 +4,7 @@ import org.hejki.sql.builder.delete.DeleteBuilder;
 import org.hejki.sql.builder.insert.InsertBuilder;
 import org.hejki.sql.builder.select.SelectBuilder;
 import org.hejki.sql.builder.update.UpdateBuilder;
+import org.springframework.data.domain.Pageable;
 
 /**
  * TODO Document me.
@@ -11,6 +12,12 @@ import org.hejki.sql.builder.update.UpdateBuilder;
  * @author Petr Hejkal
  */
 public class SQL {
+    protected final SQLBuilder builder;
+
+    protected SQL(SQLBuilder builder) {
+        this.builder = builder;
+    }
+
     public static SelectBuilder select(String... columns) {
         return new SelectBuilder().select(columns);
     }
@@ -27,4 +34,19 @@ public class SQL {
         return new DeleteBuilder(table);
     }
 
+    public SqlWithParameters toSql() {
+        return builder.toSql(null);
+    }
+
+    public SqlWithParameters toSql(Object filter) {
+        return builder.toSql(filter);
+    }
+
+    public SqlWithParameters toSql(Object filter, Pageable pageable) {
+        throw new IllegalArgumentException("Cannot call toSql with pageable parameters on SQL with no pageable support.");
+    }
+
+    public SqlWithParameters toSql(Object filter, int limit, int offset) {
+        throw new IllegalArgumentException("Cannot call toSql with pageable parameters on SQL with no pageable support.");
+    }
 }
