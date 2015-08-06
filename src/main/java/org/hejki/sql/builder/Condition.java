@@ -51,7 +51,7 @@ public class Condition {
     }
 
     public static Condition oneEqOne() {
-        return new ValueCondition("", "", "1 = 1");
+        return new SimpleCondition("", "1 = 1");
     }
 
     public static Condition custom(String expression, Object value) {

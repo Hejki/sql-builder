@@ -3,9 +3,11 @@ package org.hejki.sql.builder
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import static org.hejki.sql.builder.Condition.*
 
+@Unroll
 class SelectBuilderTest extends Specification {
 
     def "select only"() {

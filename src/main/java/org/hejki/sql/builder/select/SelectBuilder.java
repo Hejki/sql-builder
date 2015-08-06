@@ -62,7 +62,11 @@ public class SelectBuilder extends SQLBuilder<SelectBuilder> {
 
             for (Sort.Order order : pageable.getSort()) {
                 String property = order.getProperty();
-                String column = orderByMap.getOrDefault(property, property);
+                String column = orderByMap.get(property);
+
+                if (null == column) {
+                    throw new IllegalStateException("Cannot found order mapping for property " + property);
+                }
 
                 if (null == orderBy) {
                     orderBy = new StringBuilder(32);
