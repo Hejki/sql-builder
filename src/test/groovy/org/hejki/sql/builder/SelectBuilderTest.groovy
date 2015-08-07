@@ -19,6 +19,14 @@ class SelectBuilderTest extends Specification {
         private String str
         private Integer number
         private Object none
+
+        void setStr(String str) {
+            this.str = str
+        }
+    }
+
+    class FilterChild extends Filter {
+        private String str2
     }
 
     def "where condition"() {
@@ -156,5 +164,22 @@ class SelectBuilderTest extends Specification {
                 .where().or(ilike("a", ""), like("b", "")).and(isNull("c"), OR, isNotNull("d"))
         "SELECT * FROM t WHERE a = ? OR b = ? AND (c = ? AND d = ?)"                     | SQL.select("*").from("t")
                 .where(eq("a", ""), OR, eq("b", ""), AND, BEGIN_GROUP, eq("c", ""), eq("d", ""))
+    }
+
+    def "where from child filter object"() {
+        def filter = new FilterChild(str2: "d")
+
+        filter.setStr("c")
+
+        when:
+        def sql = SQL.select("*").from("t")
+                .where(geProperty("a", "str"))
+                .and(leProperty("b", "str2"))
+                .build()
+                .toSql(filter)
+
+        then:
+        "SELECT * FROM t WHERE a >= ? AND b <= ?" == sql.sql
+        ['c', 'd'] == sql.parameterList
     }
 }
